@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: Build & Test (macOS)
+    # macOS 26 SDK 가 필요하다(Liquid Glass 의 glassEffect API).
+    # macos-15 러너는 macOS 15 SDK 라 빌드가 실패한다.
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Swift 버전 확인
+        run: swift --version
+
+      - name: 빌드
+        run: swift build -c release
+
+      - name: 테스트
+        run: swift run UsageCoreTestRunner
+
+      - name: 앱 번들 빌드
+        run: ./scripts/build-app.sh
+
+      - name: 번들 검증
+        run: |
+          codesign --verify --deep --strict --verbose=2 "dist/Command Code Usage Bar.app"
+          plutil -lint "dist/Command Code Usage Bar.app/Contents/Info.plist"
+          plutil -lint Resources/PrivacyInfo.xcprivacy
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CommandCodeUsageBar
+          path: dist/*.app
+          if-no-files-found: error

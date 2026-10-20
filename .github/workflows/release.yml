@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: '릴리스 태그 (예: v0.1.0). 비우면 Info.plist 버전으로 자동 생성'
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Universal 빌드 & 릴리스
+    # macOS 26 SDK 가 필요하다(Liquid Glass 의 glassEffect API).
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 테스트
+        run: swift run UsageCoreTestRunner
+
+      - name: 유니버설 앱 빌드 (arm64 + x86_64)
+        run: ./scripts/build-app.sh --universal
+
+      - name: 아키텍처 확인
+        run: |
+          BIN="dist/Command Code Usage Bar.app/Contents/MacOS/CommandCodeUsageBar"
+          lipo -archs "$BIN"
+          lipo -archs "$BIN" | grep -q x86_64
+          lipo -archs "$BIN" | grep -q arm64
+
+      - name: zip / dmg 패키징
+        run: |
+          set -euo pipefail
+          VERSION=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Resources/Info.plist)
+          APP="dist/Command Code Usage Bar.app"
+          BASE="dist/Command Code Usage Bar-${VERSION}-universal"
+          ditto -c -k --sequesterRsrc --keepParent "$APP" "${BASE}.zip"
+          STAGING="$(mktemp -d)"
+          cp -R "$APP" "$STAGING/"
+          ln -s /Applications "$STAGING/Applications"
+          hdiutil create -volname "Command Code Usage Bar" -srcfolder "$STAGING" -ov -format UDZO "${BASE}.dmg" >/dev/null
+          rm -rf "$STAGING"
+          ls -la dist/
+
+      - name: GitHub 릴리스 업로드
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.inputs.tag }}
+        run: |
+          set -euo pipefail
+          VERSION=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Resources/Info.plist)
+          TAG="${TAG:-v${VERSION}}"
+          ZIP="dist/Command Code Usage Bar-${VERSION}-universal.zip"
+          DMG="dist/Command Code Usage Bar-${VERSION}-universal.dmg"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$ZIP" "$DMG" --clobber
+          else
+            gh release create "$TAG" "$ZIP" "$DMG" \
+              --title "Command Code Usage Bar ${VERSION}" \
+              --notes "macOS 26 이상. Intel(x86_64) / Apple Silicon(arm64) 유니버설 바이너리."
+          fi
