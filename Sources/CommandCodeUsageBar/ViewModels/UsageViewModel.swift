@@ -20,6 +20,7 @@ final class UsageViewModel: ObservableObject {
     @Published private(set) var lastUpdated: Date?
     @Published private(set) var storeError: String?
     @Published private(set) var authMessage: String?
+    @Published private(set) var launchAtLoginError: String?
     @Published var settings: AppSettings {
         didSet {
             settingsStore.save(settings)
@@ -200,6 +201,28 @@ final class UsageViewModel: ObservableObject {
 
     func clearManualKey() {
         try? auth.clearManualKey()
+    }
+
+    // MARK: - 설정 변경 (바인딩 setter 에서 호출)
+
+    func setNotificationsEnabled(_ enabled: Bool) {
+        settings.notificationsEnabled = enabled
+        Task { await NotificationManager.shared.setEnabled(enabled) }
+    }
+
+    func setLaunchAtLogin(_ enabled: Bool) {
+        switch LaunchAtLogin.setEnabled(enabled) {
+        case .success:
+            launchAtLoginError = nil
+        case .failure(let error):
+            launchAtLoginError = error.localizedDescription
+            settings.launchAtLogin = LaunchAtLogin.isEnabled
+        }
+    }
+
+    func setAuthMode(_ mode: AuthConfiguration.Mode) {
+        settings.authConfiguration.mode = mode
+        Task { await refresh(force: true) }
     }
 
     private func reloadHistory() async {

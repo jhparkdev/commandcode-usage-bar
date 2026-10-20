@@ -9,7 +9,6 @@ import UsageCore
 struct SettingsView: View {
     @EnvironmentObject private var viewModel: UsageViewModel
     @Binding var showingSettings: Bool
-    @State private var launchAtLoginError: String?
     @State private var manualKey: String = ""
 
     var body: some View {
@@ -31,33 +30,18 @@ struct SettingsView: View {
                 }
                 .pickerStyle(.segmented)
 
-                Toggle("알림 사용 (남은 20% · 5% 이하 시)", isOn: $viewModel.settings.notificationsEnabled)
-                    .onChange(of: viewModel.settings.notificationsEnabled) { _, enabled in
-                        Task { await NotificationManager.shared.setEnabled(enabled) }
-                    }
+                Toggle("알림 사용 (남은 20% · 5% 이하 시)", isOn: notificationsBinding)
 
-                Toggle("로그인 시 자동 실행", isOn: $viewModel.settings.launchAtLogin)
-                    .onChange(of: viewModel.settings.launchAtLogin) { _, enabled in
-                        switch LaunchAtLogin.setEnabled(enabled) {
-                        case .success:
-                            launchAtLoginError = nil
-                        case .failure(let error):
-                            launchAtLoginError = error.localizedDescription
-                            viewModel.settings.launchAtLogin = LaunchAtLogin.isEnabled
-                        }
-                    }
+                Toggle("로그인 시 자동 실행", isOn: launchAtLoginBinding)
             }
 
             group("인증") {
-                Picker("인증 방식", selection: $viewModel.settings.authConfiguration.mode) {
+                Picker("인증 방식", selection: authModeBinding) {
                     ForEach(AuthConfiguration.Mode.allCases, id: \.self) { mode in
                         Text(mode.title).tag(mode)
                     }
                 }
                 .pickerStyle(.menu)
-                .onChange(of: viewModel.settings.authConfiguration.mode) { _, _ in
-                    Task { await viewModel.refresh(force: true) }
-                }
 
                 Text(viewModel.settings.authConfiguration.mode.explanation)
                     .font(GlassTokens.Typography.caption)
@@ -110,7 +94,7 @@ struct SettingsView: View {
                 }
             }
 
-            if let launchAtLoginError {
+            if let launchAtLoginError = viewModel.launchAtLoginError {
                 Text(launchAtLoginError)
                     .font(GlassTokens.Typography.caption)
                     .foregroundStyle(GlassPalette.critical)
@@ -118,6 +102,31 @@ struct SettingsView: View {
             }
         }
         .controlSize(.small)
+    }
+
+    // MARK: - 바인딩
+
+    /// 설정 변경을 바인딩 setter 에서 직접 처리한다.
+    /// (`onChange` 의 macOS 13/14 시그니처 차이를 피하면서, 변경 의도와 부수 작업이 한 곳에 모인다)
+    private var notificationsBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.settings.notificationsEnabled },
+            set: { viewModel.setNotificationsEnabled($0) }
+        )
+    }
+
+    private var launchAtLoginBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.settings.launchAtLogin },
+            set: { viewModel.setLaunchAtLogin($0) }
+        )
+    }
+
+    private var authModeBinding: Binding<AuthConfiguration.Mode> {
+        Binding(
+            get: { viewModel.settings.authConfiguration.mode },
+            set: { viewModel.setAuthMode($0) }
+        )
     }
 
     // MARK: - 그룹

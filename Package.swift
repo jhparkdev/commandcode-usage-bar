@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "CommandCodeUsageBar",
-    platforms: [.macOS("26.0")],
+    platforms: [.macOS("13.0")],
     products: [
         .executable(name: "CommandCodeUsageBar", targets: ["CommandCodeUsageBar"]),
         .executable(name: "UsageCoreTestRunner", targets: ["UsageCoreTestRunner"])

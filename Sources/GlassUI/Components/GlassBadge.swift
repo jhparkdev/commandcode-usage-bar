@@ -5,18 +5,18 @@ public struct GlassBadge: View {
     private let text: String
     private let systemImage: String?
     private let tint: Color?
-    private let glass: Glass
+    private let style: GlassStyle
 
     public init(
         _ text: String,
         systemImage: String? = nil,
         tint: Color? = nil,
-        glass: Glass = .regular
+        style: GlassStyle = .regular
     ) {
         self.text = text
         self.systemImage = systemImage
         self.tint = tint
-        self.glass = glass
+        self.style = style
     }
 
     public var body: some View {
@@ -32,14 +32,12 @@ public struct GlassBadge: View {
         .padding(.horizontal, GlassLayout.badgePaddingHorizontal)
         .padding(.vertical, GlassLayout.badgePaddingVertical)
         .background {
-            Capsule()
-                .fill(.clear)
-                .glassEffect(tinted, in: .capsule)
+            GlassSurface(cornerRadius: GlassTokens.Radius.capsule, style: badgeStyle)
         }
     }
 
-    private var tinted: Glass {
-        guard let tint else { return glass }
-        return glass.tint(tint)
+    private var badgeStyle: GlassStyle {
+        guard let tint else { return style }
+        return style.tint(tint)
     }
 }

@@ -1,6 +1,8 @@
 import SwiftUI
 
 /// 유리 아이콘 버튼 (새로고침, 닫기 등)
+///
+/// macOS 26 이상은 네이티브 글래스 버튼, 그 이하는 시스템 버튼 스타일로 그린다.
 public struct GlassIconButton: View {
     private let systemImage: String
     private let help: String
@@ -25,29 +27,44 @@ public struct GlassIconButton: View {
         if previewMode {
             previewButton
         } else {
-            nativeButton
+            styledButton
         }
     }
 
-    private var nativeButton: some View {
-        Button(action: action) {
-            label
+    @ViewBuilder
+    private var styledButton: some View {
+        let button = Button(action: action) { label }
+        if GlassEnvironment.useNativeGlass {
+            if #available(macOS 26.0, *) {
+                button
+                    .buttonStyle(GlassButtonStyle())
+                    .help(help)
+                    .disabled(isBusy)
+                    .accessibilityLabel(help)
+            } else {
+                button
+                    .buttonStyle(.borderless)
+                    .help(help)
+                    .disabled(isBusy)
+                    .accessibilityLabel(help)
+            }
+        } else {
+            button
+                .buttonStyle(.borderless)
+                .help(help)
+                .disabled(isBusy)
+                .accessibilityLabel(help)
         }
-        .buttonStyle(.glass)
-        .help(help)
-        .disabled(isBusy)
-        .accessibilityLabel(help)
     }
 
+    /// 오프스크린 스냅샷용(시스템 버튼 스타일은 화면 밖 렌더링에 잡히지 않는다)
     private var previewButton: some View {
         Button(action: action) {
             label
                 .padding(.horizontal, GlassLayout.buttonPaddingHorizontal)
                 .padding(.vertical, GlassTokens.Space.xxs)
                 .background {
-                    Capsule()
-                        .fill(.clear)
-                        .glassEffect(.regular, in: .capsule)
+                    GlassSurface(cornerRadius: GlassTokens.Radius.capsule)
                 }
         }
         .buttonStyle(.plain)
@@ -96,30 +113,43 @@ public struct GlassTextButton: View {
         if previewMode {
             previewButton
         } else {
-            nativeButton
+            styledButton
         }
     }
 
     @ViewBuilder
-    private var nativeButton: some View {
-        if prominent {
-            Button(action: action) { label }
-                .buttonStyle(GlassProminentButtonStyle())
+    private var styledButton: some View {
+        let button = Button(action: action) { label }
+        if GlassEnvironment.useNativeGlass {
+            if #available(macOS 26.0, *) {
+                if prominent {
+                    button.buttonStyle(GlassProminentButtonStyle())
+                } else {
+                    button.buttonStyle(GlassButtonStyle())
+                }
+            } else if prominent {
+                button.buttonStyle(.borderedProminent)
+            } else {
+                button.buttonStyle(.bordered)
+            }
+        } else if prominent {
+            button.buttonStyle(.borderedProminent)
         } else {
-            Button(action: action) { label }
-                .buttonStyle(GlassButtonStyle())
+            button.buttonStyle(.bordered)
         }
     }
 
+    /// 오프스크린 스냅샷용
     private var previewButton: some View {
         Button(action: action) {
             label
                 .padding(.horizontal, GlassLayout.buttonPaddingHorizontal)
                 .padding(.vertical, GlassLayout.buttonPaddingVertical)
                 .background {
-                    Capsule()
-                        .fill(.clear)
-                        .glassEffect(prominent ? .regular.tint(.accentColor) : .regular, in: .capsule)
+                    GlassSurface(
+                        cornerRadius: GlassTokens.Radius.capsule,
+                        style: prominent ? .regular.tint(.accentColor) : .regular
+                    )
                 }
         }
         .buttonStyle(.plain)

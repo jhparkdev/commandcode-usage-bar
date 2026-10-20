@@ -16,7 +16,8 @@ permissions:
 jobs:
   release:
     name: Universal 빌드 & 릴리스
-    # macOS 26 SDK 가 필요하다(Liquid Glass 의 glassEffect API).
+    # 빌드에는 macOS 26 SDK 가 필요하다(Liquid Glass 의 glassEffect API).
+    # 배포 타깃 자체는 macOS 13 이다.
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
