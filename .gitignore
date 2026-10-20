@@ -1,0 +1,12 @@
+.build/
+dist/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+.DS_Store
+
+# 아이콘 원본 세트는 스크립트로 재생성한다(scripts/make-icon.swift)
+Resources/AppIcon.iconset/
+
+# 로컬 에이전트 상태(커밋 대상 아님)
+.commandcode/

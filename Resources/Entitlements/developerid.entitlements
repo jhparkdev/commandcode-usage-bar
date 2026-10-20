@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Developer ID(직접 배포) 빌드: 샌드박스를 쓰지 않는다.
+	  hardened runtime 으로 서명하면 notarization 에 통과한다.
+	  샌드박스가 없으므로 ~/.commandcode/auth.json 을 직접 읽을 수 있다.
+	-->
+	<key>com.apple.security.network.client</key>
+	<true/>
+</dict>
+</plist>

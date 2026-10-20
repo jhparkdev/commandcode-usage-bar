@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Mac App Store 빌드: 샌드박스 활성 -->
+	<key>com.apple.security.app-sandbox</key>
+	<true/>
+	<!-- 사용자가 직접 고른 인증 파일(auth.json)만 읽기 -->
+	<key>com.apple.security.files.user-selected.read-only</key>
+	<true/>
+	<!-- Command Code 사용량 API 호출 -->
+	<key>com.apple.security.network.client</key>
+	<true/>
+</dict>
+</plist>
