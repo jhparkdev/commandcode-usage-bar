@@ -14,6 +14,38 @@ Command Code(GOAT 플랜) 사용량을 맥 상단바에서 실시간으로 확�
 
 ---
 
+## 설치
+
+**macOS 26 이상** · Intel(x86_64) / Apple Silicon(arm64) 유니버설 바이너리
+
+[Releases](https://github.com/jhparkdev/commandcode-usage-bar/releases)에서 `Command Code Usage Bar-<버전>-universal.dmg` 를 받아 Applications 폴더로 옮기고 실행합니다.
+
+```bash
+# 릴리스 다운로드 후 설치
+curl -LO https://github.com/jhparkdev/commandcode-usage-bar/releases/latest/download/Command.Code.Usage.Bar-0.1.0-universal.dmg
+hdiutil attach "Command.Code.Usage.Bar-0.1.0-universal.dmg"
+cp -R "/Volumes/Command Code Usage Bar/Command Code Usage Bar.app" ~/Applications/
+hdiutil detach "/Volumes/Command Code Usage Bar"
+```
+
+첫 실행 때 보안 경고가 뜨면 **우클릭 → 열기** 를 누릅니다(Developer ID 서명이 없는 빌드라
+그렇게 해야 Gatekeeper 를 우회합니다). 그리고 Command Code 데스크톱 앱에 로그인되어 있어야
+사용량을 조회할 수 있습니다.
+
+<details>
+<summary>소스에서 직접 빌드하기</summary>
+
+```bash
+# Intel/Apple Silicon 유니버설
+./scripts/build-app.sh --universal
+
+# 현재 아키텍처만
+./scripts/build-app.sh --run
+```
+</details>
+
+---
+
 ## 요구사항
 
 | 항목 | 내용 |
