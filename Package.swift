@@ -10,6 +10,11 @@ let package = Package(
             name: "UsageCore",
             path: "Sources/UsageCore",
             linkerSettings: [.linkedLibrary("sqlite3")]
+        ),
+        // Liquid Glass 디자인 시스템 (macOS 26 API 전용)
+        .target(
+            name: "GlassUI",
+            path: "Sources/GlassUI"
         )
     ]
 )
