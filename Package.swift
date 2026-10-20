@@ -4,7 +4,9 @@ import PackageDescription
 let package = Package(
     name: "CommandCodeUsageBar",
     platforms: [.macOS("26.0")],
-    products: [],
+    products: [
+        .executable(name: "CommandCodeUsageBar", targets: ["CommandCodeUsageBar"])
+    ],
     targets: [
         .target(
             name: "UsageCore",
@@ -15,6 +17,11 @@ let package = Package(
         .target(
             name: "GlassUI",
             path: "Sources/GlassUI"
+        ),
+        .executableTarget(
+            name: "CommandCodeUsageBar",
+            dependencies: ["UsageCore", "GlassUI"],
+            path: "Sources/CommandCodeUsageBar"
         )
     ]
 )
